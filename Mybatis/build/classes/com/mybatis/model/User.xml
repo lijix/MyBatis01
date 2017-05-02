@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- <mapper namespace="com.mybatis.model.UserMapper"> 
+    <select id="selectUserByID" parameterType="int" resultType="User">
+        select * from user where id = #{id}
+    </select>
+</mapper> -->
+<!-- 采用接口方式编程 -->
+<mapper namespace="com.mybatis.inter.IUserOperation">
+
+	<select id="selectUserByID" parameterType="int" resultType="User">
+        select * from user where id = #{id}
+    </select>
+    
+    <!-- 为了返回List类型而定义的returnMap -->
+   <!--  id元素 ，用于设置主键字段与领域模型属性的映射关系
+     result元素 ，用于设置普通字段与领域模型属性的映射关系 -->
+   <resultMap type="User" id="resultListMap">
+ 	<id column="id" property="id"/>
+ 	<result column="userName" property="userName"/>
+ 	<result column="userAge" property="userAge"/>
+ 	<result column="userAddress" property="userAddress"/>
+   </resultMap>
+ <!-- 返回list的select语句，注意resultMap的值是指前面定义好的 -->
+	<select id="selectUsers" parameterType="string" resultMap="resultListMap">
+		select * from user where userName like #{userName}
+	</select>
+	
+	
+	<!-- 增加数据  useGeneratedKeys设置 为"true"表明要MyBatis获取由数据库自动生成的主   键；keyProperty="id"指定把获取到的主键值注入 到User的ID属性 -->
+	<insert id="addUser" parameterType="User" useGeneratedKeys="true" keyProperty="id">
+	    insert into user(userName,userAge,userAddress) values(#{userName},#{userAge},#{userAddress}) 
+	</insert>
+	
+	<!-- 更新数据 -->
+	<update id="updateUser" parameterType="User">
+	update user set userName=#{userName},userAge=#{userAge},userAddress=#{userAddress} where id=#{id}
+	</update>
+	
+	<!-- 删除数据 -->
+	<delete id="deleteUser" parameterType="int">
+	  delete from user where id=#{id}
+	</delete>
+	
+	
+	 <!--读取用户发表的所有文章，方法2   User联合Article进行查询的方法之一的配置（多对一的方式) -->
+	 <resultMap type="Article" id="resultUserArticle">
+	   <id property="id" column="aid"/>
+	   <result property="title" column="title"/>
+	   <result property="content" column="content"/>
+		
+		<association property="user" javaType="User">
+		<id property="id" column="id"/>
+		<result property="userName" column="userName"/>
+		<result property="userAddress" column="userAddress"/>
+		</association>
+	</resultMap>
+		<select id="getUserArticles" parameterType="int" resultMap="resultUserArticle">
+		   select user.id,user.userName,user.userAddress,article.id aid,article.title,article.content from user,article
+              where user.id=article.userid and user.id=#{id} 
+		</select> 
+</mapper>
+
+ 
+
